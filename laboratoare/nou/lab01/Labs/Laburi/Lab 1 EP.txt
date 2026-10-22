@@ -1,0 +1,38 @@
+Task 1
+a. 
+vmstat -w 1 
+stress -c $(($(nproc) / 2)) 
+b.
+strace vmstat
+file /proc/meminfo
+cat /proc/meminfo
+man 5 proc
+free -h
+vmstat
+
+Task 2
+A - modific fisierul ca in poza
+B - vmstat lalala 
+stress -c $(($(nproc) - 1)) 
+mpstat -c 5 -> doar pe core-ul 5 -> trb facut pe odd cores
+
+
+
+Task 3
+
+for ((i = 0; i<10;i++)); do time zip -${i} -r img-${i}.zip img l>dev/null; done
+
+du -b *.zip | awk '{print $1}'
+mai e o comanda ca asta pt nr in imag
+
+modif fis ala
+
+
+Task 4
+
+A. ne uitam ce e in 0xAH pozitie din 0x0
+cpuid -r
+0x0000000a 0x00
+B. sa fac alea
+
+E - poza + make | taskset 0x01 ./mat_mul 1024

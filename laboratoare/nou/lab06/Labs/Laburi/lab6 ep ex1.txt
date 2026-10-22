@@ -1,0 +1,37 @@
+import seaborn as sns
+import requests
+import json
+import pandas as pd
+
+covid_data = json.loads(requests.get('https://www.graphs.ro/json.php').content)
+
+covid_df = pd.DataFrame(covid_data['covid_romania'])
+covid_df.head()
+
+covid_county_data_dfs = []
+
+for i, row in covid_df.iterrows():
+  try: # some days have no county information
+    county_df = pd.DataFrame(row['county_data'])
+  except:
+    continue
+
+  county_df['reporting_date'] = row['reporting_date']
+  covid_county_data_dfs.append(county_df)
+
+
+county_df = pd.concat(covid_county_data_dfs)
+covid_df = covid_df.drop(['sourceUrl', 'county_data'], axis = 1)
+covid_df = covid_df.iloc[::-1]
+
+
+sns.set_theme()
+
+sns.jointplot(x = 'reporting_date', y = 'new_cases_today', data = covid_df)
+
+sns.jointplot(x = 'reporting_date', y = 'new_recovered_today', data = covid_df)
+
+sns.jointplot(x = 'reporting_date', y = 'new_tests_today', data = covid_df)
+
+sns.jointplot(x = 'reporting_date', y = 'new_deaths_today', data = covid_df)
+

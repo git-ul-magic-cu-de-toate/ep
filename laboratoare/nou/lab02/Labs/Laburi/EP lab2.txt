@@ -1,0 +1,85 @@
+Task 1.
+pt experimentul 1 si 2 nu se intampla mai nimic diferit
+puteam sa presupunwm ca pt exp 1 se face append in for se aloca gradat memoria, iar la do_allocate unde avem size*none o aloca instant, insa in python daca se schimba un element din array alocat asa se
+schimba toate, de asta nu e vreo diferenta
+
+la experimentul 3, se foloseste multa memorie, returneaza o referinta la acest array care nu este salvata nicaieri, si pt ca nu mai exista nicio referinta vine garbage collectorul si curata toata memoria, deci practic noi o sa vedem un stack(?) prima data cand apelam do_append, se iese din do_append si memoria e recuperata, creste iar memoria la do_allocate si la fel e recuperata dupa
+
+pt experiment 4, deoarece referinta e retinuta intr-o variabila pur si simplu o sa continue sa creasca memoria
+
+Task 2:
+o sa cream swapfile
+
+ls swapfile
+swapon --show
+df -Th
+cand o sa facem din nou show (sau open) si eventual un read, practic system callul de open si write va fi facut o singura data, nu vor trb sa treaca prin openul si write uk care ar tine de file systemul unde e acel fisier
+ideea e ca nu exista deloc diferente de performata intre un swap partition si un swapfile
+
+1:47:40
+
+Task 3
+A.
+Kernel Samepage Merging, Cand un proces face fork paginile lui, toate pag lui sunt marcate copy-on-write, read-only, si atunci cand copilul incearca sa faca write intr-una din aceste pagini, va crea un page fault si va face split la cele 2 pagini. Termenul Samepage Merging este procesul exact invers, daca sunt 2 pagini identice, kernelul o sa vina, o sa faca replay (?) la una din ele, o pg fizica, si adresa virtuala o va modifica sa pointeze catre una din cele 2 pagini initiale, identice. A fost dezvoltat pt a salva spatiu fizic  cand rulezi mai multe masini virtuale pe acelasi sistem.
+O sa facem un mic experiment sa vedem ca merge. Avem nevoie de suport pt asa ceva in kernel. daca ne ducem in boot (cd /boot) putem sa cautam acest flag de compilare -> grep CONFIG_KSM -config-`uname -r`
+si o sa l gasim ca a fost compilat si e element in kernel. Daca nu aveti chestia asta puteti da skip pe task,  doar il citim, un screenshot cu ce ar trb sa se obtina
+
+
+Aplicatia noastra de test o sa primeasca un nr de pg, pe alea din command line, si o sa le aloce folosing mmap, trebuie sa fie anonime si private ca sa functioneze asta,  si pt a putea fi merge-uite trebuie sa se seteze o anumita optiune, cu madvanced (?), trb sa fie marcate ca fiind merged, pt ca  daemonul care se ocupa de asta va parcurge acest set de pagini pe care le-am marcat ca fiind merged si le va compara. Daca ar fi sa facem asta pt toate pg si procesele din sistem nu am putea sa trecem nici macar prin 10 la suta intr-un minut. Deci aceste pg le-am alocat cu mmap pt a fi siguri ca sunt aliniate corect si le dam exact acc valoare. Pe urma vom face sleep vreo 10s si o sa vedem in acele 10s cum scade memory usage-ul in sistem
+/sys/kernel/mm/ksm -> mai multe fisiere in care putem tine anumite metrici. ne uitam cu cat. run (cat run) daca e 1 inseamna ca daemonul e activ si poate sa scaneze pagini. pages_to_scan (cat pages_to_scan) in mod normal daemonul o sa scaneze 100 de pg cand se trezeste apoi se duce iar sa doarma si dupa un anumit sleep_millisecs se va trezi iar (cat sleep_millisecs).ca si root schimba in pages_to_scan din 100 in 1000 (echo 1000 > pages_to_scan), si echo 1000000 > max_page_sharing - pt a se putea observa
+
+Putem afla mai multe despre asta pe https://www.kernel.org/doc/html/latest/admin-guide/mm/ksm.html
+
+B
+Sa vedem acum cum functioneaza
+Intr-un terminal neroot rulam vmstat -wa -S m 1 (comanda e in lab) si ne va arata acolo memoria activa, la coloana active va trebui sa ne uitam
+pages_sharing -> cate pag au fost deja merge-uite
+deci rulam in terminal cu root
+$ watch -n 0 cat /sys/kernel/mm/ksm/pages_sharing (se executa urmatoarea instructiune de fiecare data la interval 0)
+./ksm 200000 (aprox 1*1024*1024 / 4) -> putem vedea in terminalul cu watch cum creste memoria consuumata (min 1:56:00). a crescut pana la un moment dat si apoi a inceput sa scada. A ajuns pana la un maxim de 7923 pagini ocupate (la el) si apoi cat timp acesta a intrat in sleepul de 10s si paginile share-uite au inceput sa creascam, le fel a inceput sa scada nr de active pages, deci de la un maxim de 7923 din ce in ce mai putin si la final a murit procesul in punctul ala si s-a revenit la valoarea aproximativ initiala 7120
+
+Task 4. Intel PIN (1:57:10)
+Intel Pin e un framework care ne lasa sa rulam un(sau in?) binar (compilat - nici nu trb sa aiba simboluri de debug). noi putem opri automat executia la anumite functii sau instrunctiuni, si sa inseram noi acolo functii de analiza care sa ruleze in continuu. 
+In imagine (cea cu o schema cu albastru), avem spatiul de memorie al procesului, avem stackul, loaderul libc, heapul,  bss, data, text si diverse chestii. Intel Pin se ataseaza la proces (similar si cu gdb-ul) si va crea mappinguri in plus. In primul rand va introduce un tool care contine practic functiile de analiza pe care noi le definim, ce vrem noi sa faca inainte si dupa fiecare apel de functie, si pe urma va crea un sandbox in int spatiului de adrese. In timp ce programul se executa in mod normal, sa spunem ca noi vrem sa inseram o functie care incrementeaza un counter inainte de fiecare apel de functie si le putem le tiparim(?) dupa return (?) in fiecare functie. de exemplu acolo daca vrem sa trecem din main in A sa facem apel, prima data cand se face acest apel de A, executia se opreste, se apeleaza o functie din IntelPin care practic decide daca A e ceva care pe noi ne intereseaza sa analizam pe viitor si ii va face o copie exacta din sectiunea .text, e intergrat in spatiul virtual de adresa al procesului. Aici o sa insereze codul , sa zicem un alt apel de analiza care face un counter++, inainte si dupa, si practic va modifica adresele de jump sau callurile de functie sau lucruri d-astea, astfel incat in main, in loc sa ajunga direct in A, mai intai se  face un counter++ si din counter++ se va trece in A. Lui ii place Intel Pin nu pt ca e super eficient, exista altele mai eficiente, ci pt ca are un f bun API, e f usor de lucrat cu el
+
+Task A
+Luam minspect.zip de la TAsk A, ii dam unzip, si rulam ./setup.sh
+Framework de instrumentare binara -> binarul nu trebuie modificat in niciun fel, deci daca avem un binar care nu stim pt ce e putem folosi acest framework pt al analiza in mod automat, dar e ineficientul, overheadul va fi de 4x mai mare decat la analiza statica (din cauza counter++) deoarece trb sa se opreasca la tot pasul programul (se opreste inainte de functia A, daca ne intereseaza functia, copiaza functia in sandbox si reface toate jumpurile, toate adresele relative, si e costisitor. Nu facem insa cu pasi de optimizare pt ca e greu.
+
+codu - in poza CAPTURE1  (in src e )
+
+comanda ll patches in minspect - avem patchdiskuri intre 2 fisiere si le putem folosi pt ca sunt simple??
+
+rulam patch src/minspect.cpp patches/Task-A.patch si vedem ca se modifica codul din minspect.cpp
+Aceasta sursa va fi compilata si se va genera un fisier obiect, acesta va fi folosit de third_party/pin-3.13/pin (ll third_party/pin-3.13/pin in minspect) ca sa fie atasat la un proces pe care il lanseaza sau care deja ruleaza. Practic chestia asta e toolul de analiza care va fi injectat in spatiul de adrese al unui proces, nu procesul in sine, nu exista o sursa executabila
+Aici se intampla urmatoarele: Pin_init -> se primesc argumentele din linia de comanda si poate face ce vrea el cu ele, se initializeaza simbolurile pt a putea sa ne dam seama de numele functiilor de exemplu si cea mai importanta chestie:
+    INS_AddInstrumentFunction(ins_instrum, NULL); -> chestia asta, la nivel de instructiune, fix inainte sa se execute pt prima data si numai pt prima data fiecare instructiune distincta, o sa ia controlul si o sa faca un apel la callbackul functiei in sine. Practic, functia de instrumentare, acest callback, o sa decida daca instructiunea pe care noi tocmai am oprit-o din a se executa e ceva ce pe noi ne-ar interesa sa analizam pe viitor, de fiecare data cand va trece prin ea. Daca nu, atunci se va trece pur si simplu prin el, instructiunea o sa ramana neschimbata, dar daca da, atunci instrunctiunea va fi copiata in acel sandbox, mentionat mai devreme. Momentan tot ce vrem noi sa facem este sa obtinem functia in care se afla instructiunea, sectiunea, adica .text in care se afla aceasta functie si imaginea sau obiectul mapat in memoria virtuala in care se afla aceasta sectiune, si unde trimitem informatii,, plus eventual adresa instructiunii, codul desamblat. Practic de fiecare data cand trecen printr-o instructiune vom vedea aceste informatii.
+
+task b
+rulam  make
+rulam ./third_party/pin-3.13/pin -t obj-intel64/minspect.so -- /bin/ls 1>/dev/null -> se afis la stderr ceea ce nu e ok., explica in nota de lab 
+normal se redirecteaza intr-un fisier de lucru
+putem vedea unde au fost oprite instructiunile. Aici a fost eficient deoarece nu a fost nimic de copiat
+
+aplicam patchul pt urm task 
+patch src/minspect.cpp patches/Task-B.patch 
+
+Task C
+Vedem ca s-a modificat sursa, functia de instrumentare de mai devreme a fost schimbata. ce vrem noi acum e sa instrumentam doar instructiunile care fac read-uri din Memoria Ram si noi sa printam state-ul memoriei care s-a citit intr-un registru din RAM inainte ca acest lucru sa se intample. La fel avem INS_address si INS_Dissambler (adresa instrunctiuni si dissambler-ul) si noi parcurgem acum toti operanzii  care tin de memoria RAM ai instructiunii, si se fol intelpin.
+
+Daca unul din acesti operanzi e un read, atunci noi o sa vrem sa introducem un call la o functie de analiza -> read_analysis. Deci pt o instructiune vrem ca inainte sa se execute instructiunea sa apelam read_analysis, dandu-se ca si argumente urmatoarele chestii:IARG_ADDRINT - adresa instructiunii (ins_addr), IARG_PTR - codul dezamblat al instructiunii (strdup...) si val operandului dat (op_idx)
+Am folosit strdup pt ca in majoritatea cazurilor toate aceste valori transmise prin referinta si prin valoare s-ar pierde pt ca exista doar local. Exista si exceptii (mem_op, mem_size?) acestea sunt modificate de framework inainte de fiecare apel, de aceasta functie de analiza si sunt updatate cu valoarea curenta, valoarea cea mai recenta, care in aceat caz va fi valoarea operandului la care s-a facut citirea.
+dam make si rulam ca la TASKUL B
+
+Aici vom avea minspect, read, adresa instructiunii instructiunea efectiva si tipul(?) inainte sa se faca citirea.
+
+punem patchul task C
+patch src/minspect.cpp patches/Task-C.patch 
+
+TASK D
+e acelasi lucru dar pt scrieri, iar pt scrieri afisam state-ul memoriei inainte de a se fi executat instructiunea care scrie si dupa pt a vedea ce s-a modificat. Deci inseram o functie de analiza inainte de instructiunea de scriere si una dupa, cea dinainte o sa salveze state-ul memoriei intr-o stiva si cea de dupa va printa diferenta
+Se ruleaza programul ca la celelalte 2
+
+inca mai avem readurile si state-ul bufferului inainte de a fi citit, dar pt scriere se afiseaza diferenta
+
+Ultimul task -> de aplicat inca un patch sa vedem cum  putem  noi sa specificam din linia de comanda sa se faca instrumentarea, sa se aplice instrumentarea doar pt instructiunile care se afla intr-o anumita dunctie sau intr-un anumit obiect libc sau binarul de baza

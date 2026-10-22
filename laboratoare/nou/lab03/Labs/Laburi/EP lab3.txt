@@ -1,0 +1,37 @@
+sist de I/O - cel mai lent dintre toate. de asta ne intereseaza cum il putem imbunatatii cat mai bine, pentru a putea lucra cu el cat mai bine. daca el merge super lent degeaba celelalte merg repede.
+1. citirea si scrierea datelor - dimensiunea unei pg - 4k. comanda arata dimensiunea paginii
+2. major si minor page fault - minor page fault = pagini on-demand. aducerea pag = un major page fault. htop - se ia un pid de acolo , de la htop a luat el. rulam comanda cu pid ul procesului
+3. file buffer cache - optimizeaza nr de page fault-uri. minor page fault urile sunt mult mai multe decat major page faulturi. Se aduc cat mai putine pg de pe disk
+4. types of memory paes - pot citi
+5. writing data pages on disk
+
+Monitoring I/O
+metrici
+ de ce dureaza mult un request I/O? - pt ca HDD e lent. 7200 rotatii pe minut. cererea ia disk stick + rotational delay. Dureaza mai mult sa se invarta sa ia datele alea
+
+Random vs sequentional i/o. Sequentional I/o se foloseste la cantitati mari de date deodata + dif dintre cpu si i/o intenses processes
+
+when virtual memory kills i/o - cand ramul e full se foloseste swap space - partitie logica pe care o luam din partea de disk
+
+Task-uri
+1. 
+
+2. calculul: nr de kilobytes cititi (dam comanda fara m) - rkB/s se imparte la nr de citiri pe s (r/s). pt write -> wkB/s la w/s si vedem cate operatii s-au facut deja
+
+
+
+Am ramas la ex 6. 1:28:20
+
+Task A
+df -Th
+sudo mkdir /mnt/ramdisk
+sudo mount -t tmpfs -o size=1G ext4 /mnt/ramdisk
+sa fac ss apoi cu df -Th
+
+Task B
+sa scriu undeva unde exista fisier pt al doilea pv
+diferenta dintre outputuri este: viteza de copiere nu e f diferita, dar  eputin  mai mare pe ramdisk, si la scriere si la citire si la tot. Nu cu mult, dar e notabila pt ca e o notare facuta de soft, zona de ramdisk e mapata ca un fel de tabela de mapare a paginilor virtuale. Zona se poate apela astfel direct
+
+diferenta la el e mica pt ca are ssd, pe hdd poate fi putin mai mare
+
+la Portofoliu, referintele pot fi din articol dar unu din ele trb sa fie extern. Min 6 referinte. 5 din bibliografie, unu extern

@@ -1,0 +1,62 @@
+import seaborn as sns
+import requests
+import json
+import pandas as pd
+
+covid_data = json.loads(requests.get('https://www.graphs.ro/json.php').content)
+
+covid_df = pd.DataFrame(covid_data['covid_romania'])
+covid_df.head()
+
+covid_county_data_dfs = []
+
+for i, row in covid_df.iterrows():
+  try: # some days have no county information
+    county_df = pd.DataFrame(row['county_data'])
+  except:
+    continue
+
+  county_df['reporting_date'] = row['reporting_date']
+  covid_county_data_dfs.append(county_df)
+
+
+county_df = pd.concat(covid_county_data_dfs)
+covid_df = covid_df.drop(['sourceUrl', 'county_data'], axis = 1)
+covid_df = covid_df.iloc[::-1]
+
+covid_df_alba = county_df.loc[county_df['county_name'] == 'Alba']
+covid_df_alba = covid_df_alba.iloc[::-1]
+covid_df_alba['xx'] = ( ((covid_df_alba['total_cases']/covid_df_alba['county_population']) > 0.003 ) )
+covid_df_alba["reporting_date"] = pd.to_datetime(covid_df_alba["reporting_date"])
+
+covid_df_bacau = county_df.loc[county_df['county_name'] == 'Bacau']
+covid_df_bacau = covid_df_bacau.iloc[::-1]
+covid_df_bacau['category'] = ( ((covid_df_bacau['total_cases']/covid_df_bacau['county_population']) > 0.003 ) )
+covid_df_bacau["reporting_date"] = pd.to_datetime(covid_df_bacau["reporting_date"])
+
+covid_df_brasov = county_df.loc[county_df['county_name'] == 'Brasov']
+covid_df_brasov = covid_df_brasov.iloc[::-1]
+covid_df_brasov['category'] = ( ((covid_df_brasov['total_cases']/covid_df_brasov['county_population']) > 0.003 ) )
+covid_df_brasov["reporting_date"] = pd.to_datetime(covid_df_brasov["reporting_date"])
+
+covid_df_galati = county_df.loc[county_df['county_name'] == 'Galati']
+covid_df_galati = covid_df_galati.iloc[::-1]
+covid_df_galati['category'] = ( ((covid_df_galati['total_cases']/covid_df_galati['county_population']) > 0.003 ) )
+covid_df_galati["reporting_date"] = pd.to_datetime(covid_df_galati["reporting_date"])
+
+covid_df_prahova = county_df.loc[county_df['county_name'] == 'Prahova']
+covid_df_prahova = covid_df_prahova.iloc[::-1]
+covid_df_prahova['category'] = ( ((covid_df_prahova['total_cases']/covid_df_prahova['county_population']) > 0.003 ) )
+covid_df_prahova["reporting_date"] = pd.to_datetime(covid_df_prahova["reporting_date"])
+
+sns.set_theme()
+
+sns.jointplot(x = 'reporting_date', y = 'total_cases', data = covid_df_alba, hue='xx')
+
+sns.jointplot(x = 'reporting_date', y = 'total_cases', data = covid_df_bacau, hue ='category')
+
+sns.jointplot(x = 'reporting_date', y = 'total_cases', data = covid_df_brasov, hue ='category')
+
+sns.jointplot(x = 'reporting_date', y = 'total_cases', data = covid_df_galati, hue ='category')
+
+sns.jointplot(x = 'reporting_date', y = 'total_cases', data = covid_df_prahova, hue ='category')

@@ -1,0 +1,280 @@
+
+1:13:40 - 1:44:40
+ultimele 5 min zice de ex daca am neviue
+in terminal daca se lucreaza cu matplotlib treb dat plt.plot (sau ceva) sa apara figura
+
+import numpy as np
+ex1
+A = np.array([
+    [1, 2, 3.3, 2],
+    [3, 3.6, 7, 0],
+    [1, 3, -1, 12],
+    [2, 11, 4, 16],
+])
+
+B = np.array([
+    [10],
+    [15],
+    [3],
+    [-1],
+])
+
+C = np.linalg.inv(A) * B
+print(C)
+
+2.
+#1
+
+print(np.sum(M, axis=1))
+
+#2
+norm = np.linalg.norm(v, ord=10)
+normal_array = v/norm
+print(normal_array)
+
+3.
+M = np.array([
+    [1, 2, 3],
+    [9, 3, 10],
+    [3, 5, 0],
+    [1, 7, -3],
+    [0, -2, 3],
+    
+])
+
+v = np.array([100, 2302, 2, -10, 134, -1])
+
+# Your code here
+#1
+N=np.mean(M, axis=0, keepdims=True)
+print (N)
+
+#2
+print(np.partition(v.flatten(), -3)[-3])
+
+4.
+import matplotlib.pyplot as plt
+import numpy as np
+from math import e
+#1 
+def f1(x):
+  return max(0,x)
+
+f1_f = np.frompyfunc(f1, 1, 1) 
+
+arr1 = np.arange(-5, 5) 
+
+f1_arr = f1_f(arr1) 
+fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5,1 ,figsize=(6,25))
+ax1.plot(arr1, f1_arr)
+ax1.set_xlim(-4, 4)
+ax1.set_ylim(-2, 5)
+ax1.set_xlabel("X")
+ax1.set_ylabel("Y")
+
+ax1.set_title("Plot for f1")
+
+
+#2
+def f2(x):
+  return (e**(2*x) - 1) / (e**(2*x) + 1)
+
+f2_f = np.frompyfunc(f2, 1, 1) 
+
+arr2 = np.arange(-4, 5, 0.2) 
+
+f2_arr = f2_f(arr2) 
+
+ax2.plot(arr2, f2_arr)
+ax2.set_xlim(-4, 4)
+ax2.set_ylim(-2, 2)
+
+ax2.set_xlabel("X")
+ax2.set_ylabel("Y")
+
+ax2.set_title("Plot for f2")
+
+
+#3
+def f3(x):
+  return 1 / (1 + e**(-x))
+
+f3_f = np.frompyfunc(f3, 1, 1) 
+
+arr3 = np.arange(-7, 8, 0.2) 
+
+f3_arr = f3_f(arr3) 
+
+ax3.plot(arr3, f3_arr)
+ax3.set_xlim(-6, 6)
+ax3.set_ylim(-1, 2)
+
+ax3.set_xlabel("X")
+ax3.set_ylabel("Y")
+
+ax3.set_title("Plot for f3")
+
+
+#4
+def f4(x, mu, b):
+  return (1/(mu**2+1)) * e**((-(x-mu)**2)/(b**2))
+
+f4_f = np.frompyfunc(f4, 3, 1) 
+
+arr4_1 = np.arange(-10, 10, 1) 
+arr4_2 = np.arange(-1, 1, 0.1) 
+arr4_3 = np.arange(-1, 1, 0.1) 
+
+f4_arr = f4_f(arr4_1, arr4_2, arr4_3) 
+
+ax4.plot(arr4_1, arr4_2, arr4_3, f4_arr)
+ax4.set_xlim(-9, 9)
+ax4.set_ylim(-9, 9)
+
+ax4.set_xlabel("X")
+ax4.set_ylabel("Y")
+
+ax4.set_title("Plot for f4")
+
+
+#5
+def f5(x):
+  return 0.5*x*(1+np.tanh(0.797885*x+0.035677*x**3))
+
+f5_f = np.frompyfunc(f5, 1, 1) 
+
+arr5 = np.arange(-4, 6, 0.2) 
+
+f5_arr = f5_f(arr5) 
+
+ax5.plot(arr5, f5_arr)
+ax5.set_xlim(-4, 4)
+ax5.set_ylim(-0.5, 5)
+
+ax5.set_xlabel("X")
+ax5.set_ylabel("Y")
+
+ax5.set_title("Plot for f5")
+
+
+
+
+5.
+# Data Synthetization
+x1 = np.linspace(0.0, 5.0)
+x2 = np.linspace(0.0, 2.0)
+
+y1 = np.cos(2 * np.pi * x1) * np.exp(-x1)
+y2 = np.cos(2 * np.pi * x2)
+y3 = np.cos(1 * np.pi * x1) * np.exp(-0.5 * x1) + 0.3 * np.random.random(size = x1.shape)
+
+# Plotting code
+# TODO make this pretty.
+
+fig, (ax1, ax2) = plt.subplots(2, 1)
+
+ax1.plot(x1, y1,color = 'r', label = 'true', linestyle = 'dashed', linewidth = 1)
+ax1.scatter(x1, y3,label = 'noise')
+ax1.get_xaxis().set_ticks([])
+ax1.get_yaxis().set_ticks([])
+ax1.set_xlim(0, 5)
+ax1.set_ylim(-1, 1)
+
+ax1.set_xlabel("X")
+ax1.set_ylabel("Y")
+
+ax1.set_title("Plot for function y1 and y3")
+
+ax2.plot(x2, y2,color='r')
+ax2.get_xaxis().set_ticks([])
+ax2.get_yaxis().set_ticks([])
+ax2.set_xlim(0, 2)
+ax2.set_ylim(-1, 1)
+
+ax2.set_xlabel("X")
+ax2.set_ylabel("Y")
+
+ax2.set_title("Plot for function y2")
+
+plt.gcf().set_size_inches(14, 9)
+
+6.
+from sklearn.datasets import load_wine
+import pandas as pd
+
+wine_data = load_wine()
+
+#data = wine_dataset['data']
+#target = wine_dataset['target']
+#column_names = wine_dataset['feature_names']
+
+# TODO your code here
+train_data = np.array(wine_data.data)
+train_labels = np.array(wine_data.target)
+
+num_features = wine_data.data.shape[1]
+unique_labels = np.unique(train_labels)
+num_classes = len(unique_labels)
+data = pd.DataFrame(data=np.c_[train_data, train_labels], columns=wine_data.feature_names + ['category'])
+fig, (ax, ax1, ax3, ax2) = plt.subplots(4, 1, figsize=(6,22))
+
+data0 = data[data['category'] == 0.0]
+data1 = data[data['category'] == 1.0]
+data2 = data[data['category'] == 2.0]
+
+hist_feature_name='malic_acid'
+bin_edges0 = np.arange(0, data0[hist_feature_name].max() + 1, 1)
+bin_edges1 = np.arange(0, data1[hist_feature_name].max() + 1, 1)
+bin_edges2 = np.arange(0, data2[hist_feature_name].max() + 1, 1)
+
+ax.bar(bin_edges0 + 0.00, bin_edges0, color = 'b', width = 0.25, label = 'cat0')
+ax.bar(bin_edges1+ 0.25, bin_edges1, color = 'g', width = 0.25, label = 'cat1')
+ax.bar(bin_edges2 + 0.50, bin_edges2, color = 'r', width = 0.25, label = 'cat2')
+ax.set_ylabel('count')
+ax.set_title("are there bottles with this specific malic acid?")
+ax.set_xlabel(hist_feature_name)
+
+data0list = sorted(data0['alcohol'].tolist())
+data1list = sorted(data1['alcohol'].tolist())
+data2list = sorted(data2['alcohol'].tolist())
+
+
+X0 = np.arange(0,len(data0list),1)
+X1 = np.arange(0,len(data1list),1)
+X2 = np.arange(0,len(data2list),1)
+ax1.plot(X0, data0list, color = 'b', label = 'cat0')
+ax1.plot(X1, data1list, color = 'g', label = 'cat1')
+ax1.plot(X2, data2list, color = 'r', label = 'cat2')
+ax1.set_ylabel('count')
+ax1.set_title("alcohol index per category")
+ax1.set_xlabel('alcohol')
+
+data0list = sorted(data0['ash'].tolist())
+data1list = sorted(data1['ash'].tolist())
+data2list = sorted(data2['ash'].tolist())
+
+X0 = np.arange(0,len(data0list),1)
+X1 = np.arange(0,len(data1list),1)
+X2 = np.arange(0,len(data2list),1)
+ax3.plot(X0, data0list, color = 'b', label = 'cat0')
+ax3.plot(X1, data1list, color = 'g', label = 'cat1')
+ax3.plot(X2, data2list, color = 'r', label = 'cat2')
+ax3.set_ylabel('count')
+ax3.set_title("ash index per category")
+ax3.set_xlabel('alcohol')
+
+data0list = sorted(data0['malic_acid'].tolist())
+data1list = sorted(data1['malic_acid'].tolist())
+data2list = sorted(data2['malic_acid'].tolist())
+
+X0 = np.arange(1,len(data0list)+1,1)
+X1 = np.arange(1,len(data1list)+1,1)
+X2 = np.arange(1,len(data2list)+1,1)
+ax2.plot(X0, data0list, color = 'b', label = 'cat0')
+ax2.plot(X1, data1list, color = 'g', label = 'cat1')
+ax2.plot(X2, data2list, color = 'r', label = 'cat2')
+ax2.set_ylabel('count')
+ax2.set_title("malic_acid index per category")
+ax2.set_xlabel('malic_acid')
+plt.show()
+

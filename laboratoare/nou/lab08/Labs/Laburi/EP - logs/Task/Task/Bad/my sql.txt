@@ -1,0 +1,5 @@
+diana_ora Stephy230197@
+oracle Stephy230197
+
+
+set linesize 100
